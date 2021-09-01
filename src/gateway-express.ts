@@ -7,18 +7,22 @@ function gateway_express(this: any, options: any) {
 
 
   async function handler(req: any, res: any, next: any) {
-    if (req.path.startsWith(options.prefix)) {
-      let body = req.body
-      let json = 'string' === typeof (body) ? parseJSON(body) : body
-      if (json.error$) {
-        res.status(400).send(json)
-      }
-      else {
-        let out: any = await gateway(json)
-        res.send(out)
-      }
+
+    // Prefer app.use('/path', handler) as more idiomatic.
+    let prefix = options.prefix
+    if (null != prefix && !req.path.startsWith(prefix)) {
+      return next()
     }
-    else next()
+
+    let body = req.body
+    let json = 'string' === typeof (body) ? parseJSON(body) : body
+    if (json.error$) {
+      res.status(400).send(json)
+    }
+    else {
+      let out: any = await gateway(json, { req, res })
+      res.send(out)
+    }
   }
 
 
@@ -33,6 +37,7 @@ function gateway_express(this: any, options: any) {
 
 // Default options.
 gateway_express.defaults = {
+  // TODO: should be undefined by default
   prefix: '/seneca'
 }
 
