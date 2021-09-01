@@ -6,22 +6,27 @@ function gateway_express(this: any, options: any) {
   const parseJSON = seneca.export('gateway/parseJSON')
 
 
-  async function handler(req: any, res: any, next: any) {
-
-    // Prefer app.use('/path', handler) as more idiomatic.
-    let prefix = options.prefix
-    if (null != prefix && !req.path.startsWith(prefix)) {
-      return next()
+  seneca.act('sys:gateway,add:hook,hook:delegate', {
+    action: (delegate: any, _json: any, ctx: any) => {
+      ctx.req.seneca$ = delegate
     }
+  })
 
+
+  async function handler(req: any, res: any, next: any) {
     let body = req.body
     let json = 'string' === typeof (body) ? parseJSON(body) : body
     if (json.error$) {
-      res.status(400).send(json)
+      return res.status(400).send(json)
     }
     else {
       let out: any = await gateway(json, { req, res })
-      res.send(out)
+      if (out.done$) {
+        return next()
+      }
+      else {
+        res.send(out)
+      }
     }
   }
 
@@ -37,8 +42,6 @@ function gateway_express(this: any, options: any) {
 
 // Default options.
 gateway_express.defaults = {
-  // TODO: should be undefined by default
-  prefix: '/seneca'
 }
 
 
