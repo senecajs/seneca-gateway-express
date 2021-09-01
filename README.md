@@ -1,2 +1,3 @@
-# seneca-gateway
-Handle incoming messages within other frameworks.
+# seneca-gateway-express
+Handle incoming messages within express, defining an endpoint that accepts Seneca messages.
+
