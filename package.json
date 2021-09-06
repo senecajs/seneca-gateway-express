@@ -1,14 +1,15 @@
 {
   "name": "@seneca/gateway-express",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "dist/gateway-express.js",
   "type": "commonjs",
   "types": "dist/gateway-express.d.ts",
   "description": "Handle incoming messages within express, defining an endpoint that accepts Seneca messages.",
   "homepage": "https://github.com/senecajs/seneca-gateway-express",
   "keywords": [
-    "seneca",
-    "gateway-express"
+    "gateway",
+    "express",
+    "seneca"
   ],
   "author": "Richard Rodger - richardrodger.com",
   "repository": {
@@ -36,19 +37,19 @@
   "devDependencies": {
     "@seneca/gateway": "^0.1.5",
     "@types/jest": "^27.0.1",
-    "esbuild": "^0.12.24",
+    "esbuild": "^0.12.25",
     "esbuild-jest": "^0.5.0",
     "express": "^4.17.1",
     "jest": "^27.1.0",
-    "seneca": ">=3",
+    "seneca": "^3.23.3",
     "seneca-msg-test": "^3.2.0",
-    "seneca-promisify": ">=2",
+    "seneca-promisify": "^2.0.0",
     "typescript": "^4.4.2"
   },
   "peerDependencies": {
-    "seneca": ">=3",
     "seneca-promisify": ">=2",
     "@seneca/gateway": ">=0",
-    "express": ">=4"
+    "express": ">=4",
+    "seneca": ">=3"
   }
 }

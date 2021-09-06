@@ -5,7 +5,7 @@ const Seneca = require('seneca')
 
 
 
-describe('gateway', () => {
+describe('gateway-express', () => {
 
   test('happy', async () => {
     const seneca = Seneca({ legacy: false })
