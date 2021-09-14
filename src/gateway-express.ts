@@ -21,17 +21,21 @@ function gateway_express(this: any, options: any) {
       return res.status(400).send(json)
     }
 
-    const out: any = await gateway(json, { req, res })
+    try {
+      const out: any = await gateway(json, { req, res })
 
-    if (out?.done$) {
-      return next()
+      if (out?.done$) {
+        return next()
+      }
+
+      if (out?.error$) {
+        return next(out)
+      }
+
+      return res.send(out)
+    } catch (err) {
+      throw err
     }
-
-    if (out?.error$) {
-      return next(out)
-    }
-
-    return res.send(out)
   }
 
 

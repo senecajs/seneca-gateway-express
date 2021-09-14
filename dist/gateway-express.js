@@ -16,14 +16,19 @@ function gateway_express(options) {
         if (json.error$) {
             return res.status(400).send(json);
         }
-        const out = await gateway(json, { req, res });
-        if (out === null || out === void 0 ? void 0 : out.done$) {
-            return next();
+        try {
+            const out = await gateway(json, { req, res });
+            if (out === null || out === void 0 ? void 0 : out.done$) {
+                return next();
+            }
+            if (out === null || out === void 0 ? void 0 : out.error$) {
+                return next(out);
+            }
+            return res.send(out);
         }
-        if (out === null || out === void 0 ? void 0 : out.error$) {
-            return next(out);
+        catch (err) {
+            throw err;
         }
-        return res.send(out);
     }
     return {
         name: 'gateway-express',
