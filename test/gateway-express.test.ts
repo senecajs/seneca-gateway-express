@@ -117,3 +117,77 @@ describe('gateway-express error handling', () => {
   })
 })
 
+
+describe('error handling when user requested Express to be bypassed', () => {
+  const responses = []
+
+  const make_mock_request = (args) => {
+    const body = args.body
+
+    return {
+      path: '/whatever',
+      body
+    }
+  }
+
+  const make_mock_response = () => {
+    return {
+      status(_code) {
+        return this
+      },
+
+      send(out) {
+        responses.push(out)
+      }
+    }
+  }
+
+  test('bypasses the Express error handler', done => {
+    Seneca({
+      legacy: false
+    })
+      .quiet()
+      .use('promisify')
+      .use('gateway')
+
+      .use(GatewayExpress, {
+        bypass_express_error_handler: true
+      })
+
+      .test()
+
+      .message('foo:1', async function (msg: any) {
+        return msg
+      })
+
+      .ready(async function () {
+        try {
+          const seneca = this
+          const handler = seneca.export('gateway-express/handler')
+
+          const req = make_mock_request({ body: { bad: 2 } })
+          const res = make_mock_response()
+
+          await handler(req, res, (err, _req, _res, _next) => {
+            return done(
+              new Error("The Express error handler shouldn't have been called")
+            )
+          })
+
+          expect(responses.length).toEqual(1)
+
+          expect(responses[0]).toEqual({
+            seneca$: true,
+            code$: 'act_not_found',
+            error$: true,
+            meta$: undefined
+          })
+
+          return done()
+        } catch (err) {
+          return done(err)
+        }
+      })
+  })
+})
+

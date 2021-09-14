@@ -28,7 +28,7 @@ function gateway_express(this: any, options: any) {
         return next()
       }
 
-      if (out?.error$) {
+      if (out?.error$ && !options.bypass_express_error_handler) {
         // NOTE: Here we are passing the object with information about
         // the error to the Express' error handler, which allows users
         // to handle errors in their application.
