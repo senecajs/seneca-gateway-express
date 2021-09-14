@@ -42,12 +42,12 @@ function gateway_express(this: any, options: any) {
 
       return res.send(out)
     } catch (err) {
-      /* NOTE: Since the `gateway` function should not normally throw, and
-       * all errors coming from the underlying Seneca instance are handled
-       * by it, - we assume that if something does throw, it's nothing that
-       * can be adequately handled. Hence, we do not pass this error to the
-       * Express handler.
-       */
+      // NOTE: Since the `gateway` function should not normally throw, and
+      // all errors coming from the underlying Seneca instance are handled
+      // by it, - we assume that if something does throw, it's nothing that
+      // can be adequately handled. Hence, we do not pass this error to the
+      // Express handler.
+      //
       throw err
     }
   }
