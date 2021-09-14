@@ -14,20 +14,24 @@ function gateway_express(this: any, options: any) {
 
 
   async function handler(req: any, res: any, next: any) {
-    let body = req.body
-    let json = 'string' === typeof (body) ? parseJSON(body) : body
+    const body = req.body
+    const json = 'string' === typeof body ? parseJSON(body) : body
+
     if (json.error$) {
       return res.status(400).send(json)
     }
-    else {
-      let out: any = await gateway(json, { req, res })
-      if (out.done$) {
-        return next()
-      }
-      else {
-        res.send(out)
-      }
+
+    const out: any = await gateway(json, { req, res })
+
+    if (out?.done$) {
+      return next()
     }
+
+    if (out?.error$) {
+      return next(out)
+    }
+
+    return res.send(out)
   }
 
 
