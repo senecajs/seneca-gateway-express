@@ -11,20 +11,19 @@ function gateway_express(options) {
         }
     });
     async function handler(req, res, next) {
-        let body = req.body;
-        let json = 'string' === typeof (body) ? parseJSON(body) : body;
+        const body = req.body;
+        const json = 'string' === typeof body ? parseJSON(body) : body;
         if (json.error$) {
             return res.status(400).send(json);
         }
-        else {
-            let out = await gateway(json, { req, res });
-            if (out.done$) {
-                return next();
-            }
-            else {
-                res.send(out);
-            }
+        const out = await gateway(json, { req, res });
+        if (out === null || out === void 0 ? void 0 : out.done$) {
+            return next();
         }
+        if (out === null || out === void 0 ? void 0 : out.error$) {
+            return next(out);
+        }
+        return res.send(out);
     }
     return {
         name: 'gateway-express',
