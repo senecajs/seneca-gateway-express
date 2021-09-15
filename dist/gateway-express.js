@@ -11,19 +11,37 @@ function gateway_express(options) {
         }
     });
     async function handler(req, res, next) {
-        let body = req.body;
-        let json = 'string' === typeof (body) ? parseJSON(body) : body;
+        const body = req.body;
+        const json = 'string' === typeof body ? parseJSON(body) : body;
         if (json.error$) {
             return res.status(400).send(json);
         }
-        else {
-            let out = await gateway(json, { req, res });
-            if (out.done$) {
+        try {
+            const out = await gateway(json, { req, res });
+            if (out === null || out === void 0 ? void 0 : out.done$) {
                 return next();
             }
-            else {
-                res.send(out);
+            if (out === null || out === void 0 ? void 0 : out.error$) {
+                // NOTE: Here we are passing the object with information about
+                // the error to the Express' error handler, which allows users
+                // to handle errors in their application.
+                //
+                // This is useful, for example, when you want to return an HTTP
+                // 404 for the 'act_not_found' error; - or handle any other error
+                // that you defined and threw inside a Seneca instance.
+                //
+                return next(out);
             }
+            return res.send(out);
+        }
+        catch (err) {
+            // NOTE: Since the `gateway` function should not normally throw, and
+            // all errors coming from the underlying Seneca instance should have
+            // been handled by it already, - we assume that if something does throw,
+            // then it's nothing that can be adequately handled. Hence, we do not
+            // pass this error to the Express handler, and we let it crash instead.
+            //
+            throw err;
         }
     }
     return {

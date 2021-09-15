@@ -44,9 +44,6 @@ describe('gateway-express', () => {
       status: (code: any) => {
         tmp[0].code = code
         return this
-        //return {
-        //  send: (out: any) => tmp[0].out = out
-        //}
       },
       send: (out: any) => tmp[0].out = out
     }
@@ -55,19 +52,142 @@ describe('gateway-express', () => {
     await handler(reqmock({ foo: 1, x: 2 }), resmock, nextmock)
 
     expect(tmp[0].out).toMatchObject({ x: 2, y: 99 })
-
-    tmp[0] = {}
-    // use quiet$ directive when available
-    await handler(reqmock({ bad: 1 }), resmock, nextmock)
-
-    // console.log(tmp)
-    expect(tmp[0].out).toMatchObject({
-      'seneca$': true,
-      'code$': 'act_not_found',
-      'error$': true,
-    })
-
   })
 
+})
+
+describe('gateway-express error handling', () => {
+  const make_mock_request = (args) => {
+    const body = args.body
+
+    return {
+      path: '/whatever',
+      body
+    }
+  }
+
+  const make_mock_response = () => {
+    return {
+      status(_code) {
+        throw new Error('response code should not be sent')
+      },
+
+      send(_out) {
+        throw new Error('response data should not be sent')
+      }
+    }
+  }
+
+  test('runs the Express error handler', done => {
+    Seneca({
+      legacy: false
+    })
+      .quiet()
+      .use('promisify')
+      .use('gateway')
+      .use(GatewayExpress)
+
+      .test()
+
+      .message('foo:1', async function (msg: any) {
+        return msg
+      })
+
+      .ready(async function () {
+        try {
+          const seneca = this
+          const handler = seneca.export('gateway-express/handler')
+
+          const req = make_mock_request({ body: { bad: 2 } })
+          const res = make_mock_response()
+
+          await handler(req, res, (err, _req, _res, _next) => {
+            expect(err).toMatchObject({
+              error$: true,
+              seneca$: true,
+              code$: 'act_not_found'
+            })
+
+            return done()
+          })
+        } catch (err) {
+          return done(err)
+        }
+      })
+  })
+})
+
+
+describe('error handling when user requested Express to be bypassed', () => {
+  const responses = []
+
+  const make_mock_request = (args) => {
+    const body = args.body
+
+    return {
+      path: '/whatever',
+      body
+    }
+  }
+
+  const make_mock_response = () => {
+    return {
+      status(_code) {
+        return this
+      },
+
+      send(out) {
+        responses.push(out)
+      }
+    }
+  }
+
+  test('bypasses the Express error handler', done => {
+    Seneca({
+      legacy: false
+    })
+      .quiet()
+      .use('promisify')
+      .use('gateway')
+
+      .use(GatewayExpress, {
+        bypass_express_error_handler: true
+      })
+
+      .test()
+
+      .message('foo:1', async function (msg: any) {
+        return msg
+      })
+
+      .ready(async function () {
+        try {
+          const seneca = this
+          const handler = seneca.export('gateway-express/handler')
+
+          const req = make_mock_request({ body: { bad: 2 } })
+          const res = make_mock_response()
+
+          await handler(req, res, (err, _req, _res, _next) => {
+            return done(
+              new Error("The Express error handler shouldn't have been called")
+            )
+          })
+
+          expect(responses.length).toEqual(1)
+
+          expect(responses[0]).toEqual({
+            seneca$: true,
+            code$: 'act_not_found',
+            error$: true,
+            meta$: undefined
+          })
+
+          return done()
+        } catch (err) {
+          return done(err)
+        }
+      })
+  })
 })
 
