@@ -6,8 +6,8 @@ function gateway_express(options) {
     const gateway = seneca.export('gateway/handler');
     const parseJSON = seneca.export('gateway/parseJSON');
     seneca.act('sys:gateway,add:hook,hook:delegate', {
-        action: (delegate, _json, ctx) => {
-            ctx.req.seneca$ = delegate;
+        action: (_json, ctx) => {
+            ctx.req.seneca$ = this;
         }
     });
     async function handler(req, res, next) {
@@ -21,7 +21,7 @@ function gateway_express(options) {
             if (out === null || out === void 0 ? void 0 : out.done$) {
                 return next();
             }
-            if (out === null || out === void 0 ? void 0 : out.error$) {
+            if ((out === null || out === void 0 ? void 0 : out.error$) && !options.bypass_express_error_handler) {
                 // NOTE: Here we are passing the object with information about
                 // the error to the Express' error handler, which allows users
                 // to handle errors in their application.

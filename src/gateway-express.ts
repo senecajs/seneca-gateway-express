@@ -7,8 +7,8 @@ function gateway_express(this: any, options: any) {
 
 
   seneca.act('sys:gateway,add:hook,hook:delegate', {
-    action: (delegate: any, _json: any, ctx: any) => {
-      ctx.req.seneca$ = delegate
+    action: (_json: any, ctx: any) => {
+      ctx.req.seneca$ = this
     }
   })
 
