@@ -1,48 +1,43 @@
 "use strict";
-/* Copyright © 2021 Richard Rodger, MIT License. */
+/* Copyright © 2021-2022 Richard Rodger, MIT License. */
 Object.defineProperty(exports, "__esModule", { value: true });
 function gateway_express(options) {
     const seneca = this;
-    const gateway = seneca.export('gateway/handler');
-    const parseJSON = seneca.export('gateway/parseJSON');
+    const tag = seneca.plugin.tag;
+    const gtag = (null == tag || '-' === tag) ? '' : '$' + tag;
+    const gateway = seneca.export('gateway' + gtag + '/handler');
+    const parseJSON = seneca.export('gateway' + gtag + '/parseJSON');
     seneca.act('sys:gateway,add:hook,hook:delegate', {
+        gateway: 'express',
+        tag: seneca.plugin.tag,
         action: (_json, ctx) => {
             ctx.req.seneca$ = this;
         }
     });
     async function handler(req, res, next) {
+        var _a, _b;
         const body = req.body;
         const json = 'string' === typeof body ? parseJSON(body) : body;
         if (json.error$) {
             return res.status(400).send(json);
         }
-        try {
-            const out = await gateway(json, { req, res });
-            if (out === null || out === void 0 ? void 0 : out.done$) {
-                return next();
-            }
-            if ((out === null || out === void 0 ? void 0 : out.error$) && !options.bypass_express_error_handler) {
-                // NOTE: Here we are passing the object with information about
-                // the error to the Express' error handler, which allows users
-                // to handle errors in their application.
-                //
-                // This is useful, for example, when you want to return an HTTP
-                // 404 for the 'act_not_found' error; - or handle any other error
-                // that you defined and threw inside a Seneca instance.
-                //
-                return next(out);
-            }
-            return res.send(out);
+        const out = await gateway(json, { req, res });
+        if ((_a = out === null || out === void 0 ? void 0 : out.handler$) === null || _a === void 0 ? void 0 : _a.done) {
+            return next();
         }
-        catch (err) {
-            // NOTE: Since the `gateway` function should not normally throw, and
-            // all errors coming from the underlying Seneca instance should have
-            // been handled by it already, - we assume that if something does throw,
-            // then it's nothing that can be adequately handled. Hence, we do not
-            // pass this error to the Express handler, and we let it crash instead.
+        // TODO: review
+        if (((_b = out === null || out === void 0 ? void 0 : out.handler$) === null || _b === void 0 ? void 0 : _b.error) && !options.bypass_express_error_handler) {
+            // NOTE: Here we are passing the object with information about
+            // the error to the Express' error handler, which allows users
+            // to handle errors in their application.
             //
-            throw err;
+            // This is useful, for example, when you want to return an HTTP
+            // 404 for the 'act_not_found' error; - or handle any other error
+            // that you defined and threw inside a Seneca instance.
+            //
+            return next(out);
         }
+        return res.send(out);
     }
     return {
         name: 'gateway-express',

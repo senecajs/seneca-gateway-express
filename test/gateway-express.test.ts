@@ -87,9 +87,11 @@ describe('gateway-express', () => {
 
           await handler(req, res, (err: any, _req: any, _res: any, _next: any) => {
             expect(err).toMatchObject({
-              error$: true,
-              seneca$: true,
-              code$: 'act_not_found'
+              handler$: {
+                error: true,
+                seneca: true,
+                code: 'act_not_found'
+              }
             })
 
             return done()
@@ -147,10 +149,12 @@ describe('gateway-express', () => {
           expect(responses.length).toEqual(1)
 
           expect(responses[0]).toEqual({
-            seneca$: true,
-            code$: 'act_not_found',
-            error$: true,
-            meta$: undefined
+            handler$: {
+              seneca: true,
+              code: 'act_not_found',
+              error: true,
+              meta: undefined
+            }
           })
 
           return done()
@@ -159,6 +163,26 @@ describe('gateway-express', () => {
         }
       })
   })
+
+
+  test('tag', async () => {
+    const seneca = Seneca({ legacy: false })
+      .test()
+      .use('promisify')
+      .use('gateway')
+      .use({ define: GatewayExpress, tag: 'foo' })
+    await seneca.ready()
+    expect(seneca.list('tag:foo')).toEqual([
+      {
+        name: 'gateway_express',
+        plugin: 'define',
+        role: 'seneca',
+        seq: '2',
+        tag: 'foo'
+      }
+    ])
+  })
+
 })
 
 
