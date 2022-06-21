@@ -23,6 +23,13 @@ function gateway_express(this: any, options: any) {
 
     const json = 'string' === typeof body ? parseJSON(body) : body
 
+    // TODO: doc as a standard feature
+    // TODO: implement in other gateways
+    json.gateway = {
+      params: req.params,
+      query: req.query,
+    }
+
     if (json.error$) {
       return res.status(400).send(json)
     }
