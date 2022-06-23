@@ -18,7 +18,7 @@ function gateway_express(this: any, options: any) {
   })
 
 
-  async function handler(req: any, res: any, next: any) {
+  async function msg(req: any, res: any, next: any) {
     const body = req.body
 
     const json = 'string' === typeof body ? parseJSON(body) : body
@@ -34,33 +34,82 @@ function gateway_express(this: any, options: any) {
       return res.status(400).send(json)
     }
 
+    // TODO: handle throw errors
     const out: any = await gateway(json, { req, res })
 
-    if (out?.handler$?.done) {
-      return next()
-    }
+    if (out && out.handler$) {
+      if (out.handler$.done) {
+        return next()
+      }
 
-    // TODO: review
-    if (out?.handler$?.error && !options.bypass_express_error_handler) {
-      // NOTE: Here we are passing the object with information about
-      // the error to the Express' error handler, which allows users
-      // to handle errors in their application.
-      //
-      // This is useful, for example, when you want to return an HTTP
-      // 404 for the 'act_not_found' error; - or handle any other error
-      // that you defined and threw inside a Seneca instance.
-      //
-      return next(out)
+      if (out.handler$.redirect) {
+        return res.redirect(out.handler$.redirect)
+      }
+
+      // TODO: move to gateway-auth express handling
+      // TODO: provide a hook to use gateway-auth for response modification
+      if (out.handler$.login) {
+        if (out.handler$.login.token) {
+          res.cookie(
+            'seneca-auth',
+            out.handler$.login.token,
+            {
+              maxAge: 365 * 24 * 60 * 60 * 1000,
+              httpOnly: true,
+              sameSite: true
+            })
+        }
+        else if (out.handler$.login.remove) {
+          res.clearCookie('seneca-auth')
+        }
+      }
+
+      // TODO: review
+      if (out?.handler$?.error && !options.bypass_express_error_handler) {
+        // NOTE: Here we are passing the object with information about
+        // the error to the Express' error handler, which allows users
+        // to handle errors in their application.
+        //
+        // This is useful, for example, when you want to return an HTTP
+        // 404 for the 'act_not_found' error; - or handle any other error
+        // that you defined and threw inside a Seneca instance.
+        //
+        return next(out)
+      }
     }
 
     return res.send(out)
   }
 
 
+  async function hook(req: any, res: any, next: any) {
+    const body = req.body || {}
+
+    const name = req.params.name
+    const code = req.params.code
+
+    // Standard message for hooks based on URL path format:
+    // /prefix/:name/:code
+    const hookmsg = {
+      handle: 'hook',
+      name,
+      code,
+      body: 'string' === typeof body ? parseJSON(body) : body
+    }
+
+    req.body = hookmsg
+
+    return msg(req, res, next)
+  }
+
+
   return {
     name: 'gateway-express',
     exports: {
-      handler
+      // DEPRECATE
+      handler: msg,
+      msg,
+      hook,
     }
   }
 }
