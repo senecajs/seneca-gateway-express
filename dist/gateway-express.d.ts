@@ -8,7 +8,7 @@ declare function gateway_express(this: any, options: any): {
 };
 declare namespace gateway_express {
     var defaults: {
-        login: {
+        auth: {
             token: {
                 name: string;
             };

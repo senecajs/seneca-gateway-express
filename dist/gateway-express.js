@@ -37,14 +37,14 @@ function gateway_express(options) {
             // TODO: provide a hook to use gateway-auth for response modification
             if (out.handler$.login) {
                 if (out.handler$.login.token) {
-                    res.cookie(options.login.token.name, out.handler$.login.token, {
+                    res.cookie(options.auth.token.name, out.handler$.login.token, {
                         maxAge: 365 * 24 * 60 * 60 * 1000,
                         httpOnly: true,
                         sameSite: true
                     });
                 }
                 else if (out.handler$.login.remove) {
-                    res.clearCookie('seneca-auth');
+                    res.clearCookie(options.auth.token.name);
                 }
             }
             // Should be last as final action
@@ -93,7 +93,7 @@ function gateway_express(options) {
 }
 // Default options.
 gateway_express.defaults = {
-    login: {
+    auth: {
         token: {
             name: 'seneca-auth'
         }

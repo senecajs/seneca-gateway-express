@@ -47,7 +47,7 @@ function gateway_express(this: any, options: any) {
       if (out.handler$.login) {
         if (out.handler$.login.token) {
           res.cookie(
-            options.login.token.name,
+            options.auth.token.name,
             out.handler$.login.token,
             {
               maxAge: 365 * 24 * 60 * 60 * 1000,
@@ -56,7 +56,7 @@ function gateway_express(this: any, options: any) {
             })
         }
         else if (out.handler$.login.remove) {
-          res.clearCookie('seneca-auth')
+          res.clearCookie(options.auth.token.name)
         }
       }
 
@@ -118,7 +118,7 @@ function gateway_express(this: any, options: any) {
 
 // Default options.
 gateway_express.defaults = {
-  login: {
+  auth: {
     token: {
       name: 'seneca-auth'
     }
