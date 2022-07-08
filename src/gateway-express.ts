@@ -42,10 +42,6 @@ function gateway_express(this: any, options: any) {
         return next()
       }
 
-      if (out.handler$.redirect) {
-        return res.redirect(out.handler$.redirect)
-      }
-
       // TODO: move to gateway-auth express handling
       // TODO: provide a hook to use gateway-auth for response modification
       if (out.handler$.login) {
@@ -62,6 +58,11 @@ function gateway_express(this: any, options: any) {
         else if (out.handler$.login.remove) {
           res.clearCookie('seneca-auth')
         }
+      }
+
+      // Should be last as final action
+      if (out.handler$.redirect) {
+        return res.redirect(out.handler$.redirect)
       }
 
       // TODO: review
