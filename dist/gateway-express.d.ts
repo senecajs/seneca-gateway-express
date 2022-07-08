@@ -7,6 +7,13 @@ declare function gateway_express(this: any, options: any): {
     };
 };
 declare namespace gateway_express {
-    var defaults: {};
+    var defaults: {
+        login: {
+            token: {
+                name: string;
+            };
+        };
+        bypass_express_error_handler: boolean;
+    };
 }
 export default gateway_express;

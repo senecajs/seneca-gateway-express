@@ -47,7 +47,7 @@ function gateway_express(this: any, options: any) {
       if (out.handler$.login) {
         if (out.handler$.login.token) {
           res.cookie(
-            'seneca-auth',
+            options.login.token.name,
             out.handler$.login.token,
             {
               maxAge: 365 * 24 * 60 * 60 * 1000,
@@ -118,6 +118,14 @@ function gateway_express(this: any, options: any) {
 
 // Default options.
 gateway_express.defaults = {
+  login: {
+    token: {
+      name: 'seneca-auth'
+    }
+  },
+
+  // TODO: review
+  bypass_express_error_handler: false
 }
 
 

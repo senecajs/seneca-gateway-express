@@ -37,7 +37,7 @@ function gateway_express(options) {
             // TODO: provide a hook to use gateway-auth for response modification
             if (out.handler$.login) {
                 if (out.handler$.login.token) {
-                    res.cookie('seneca-auth', out.handler$.login.token, {
+                    res.cookie(options.login.token.name, out.handler$.login.token, {
                         maxAge: 365 * 24 * 60 * 60 * 1000,
                         httpOnly: true,
                         sameSite: true
@@ -92,7 +92,15 @@ function gateway_express(options) {
     };
 }
 // Default options.
-gateway_express.defaults = {};
+gateway_express.defaults = {
+    login: {
+        token: {
+            name: 'seneca-auth'
+        }
+    },
+    // TODO: review
+    bypass_express_error_handler: false
+};
 exports.default = gateway_express;
 if ('undefined' !== typeof (module)) {
     module.exports = gateway_express;
