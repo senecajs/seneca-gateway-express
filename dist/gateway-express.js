@@ -28,7 +28,6 @@ function gateway_express(options) {
         if (json.error$) {
             return res.status(400).send(json);
         }
-        // TODO: handle throw errors
         const result = await gateway(json, { req, res });
         let gateway$ = result.gateway$;
         if (gateway$.auth && options.auth) {

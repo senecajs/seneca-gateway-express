@@ -9,7 +9,6 @@ import type {
 } from '@seneca/gateway'
 
 
-
 type GatewayExpressOptions = {
   auth?: {
     token: {
@@ -88,7 +87,6 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
       return res.status(400).send(json)
     }
 
-    // TODO: handle throw errors
     const result: GatewayResult = await gateway(json, { req, res })
 
     let gateway$: GatewayExpressDirective = result.gateway$
