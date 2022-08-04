@@ -15,6 +15,7 @@ describe('gateway-express', () => {
     await seneca.ready()
   })
 
+
   test('basic', async () => {
     const seneca = Seneca({ legacy: false })
       .test()
@@ -81,17 +82,17 @@ describe('gateway-express', () => {
             },
 
             send(_out: any) {
+              console.log(_out)
               throw new Error('response data should not be sent')
             }
           }
 
           await handler(req, res, (err: any, _req: any, _res: any, _next: any) => {
+            console.log(err)
+
             expect(err).toMatchObject({
-              handler$: {
-                error: true,
-                seneca: true,
-                code: 'act_not_found'
-              }
+              name: 'Error',
+              code: 'act_not_found',
             })
 
             return done()
@@ -115,7 +116,9 @@ describe('gateway-express', () => {
       .use('gateway')
 
       .use(GatewayExpress, {
-        bypass_express_error_handler: true
+        error: {
+          next: false
+        }
       })
 
       .message('foo:1', async function(msg: any) {
@@ -148,13 +151,9 @@ describe('gateway-express', () => {
 
           expect(responses.length).toEqual(1)
 
-          expect(responses[0]).toEqual({
-            handler$: {
-              seneca: true,
-              code: 'act_not_found',
-              error: true,
-              meta: undefined
-            }
+          expect(responses[0].error$).toEqual({
+            code: 'act_not_found',
+            name: 'Error'
           })
 
           return done()

@@ -1,6 +1,7 @@
 "use strict";
 /* Copyright © 2021-2022 Richard Rodger, MIT License. */
 Object.defineProperty(exports, "__esModule", { value: true });
+const gubu_1 = require("gubu");
 function gateway_express(options) {
     const seneca = this;
     const tag = seneca.plugin.tag;
@@ -14,8 +15,8 @@ function gateway_express(options) {
             ctx.req.seneca$ = this;
         }
     });
-    async function msg(req, res, next) {
-        var _a;
+    async function handler(req, res, next) {
+        var _a, _b, _c;
         const body = req.body;
         const json = 'string' === typeof body ? parseJSON(body) : body;
         // TODO: doc as a standard feature
@@ -28,44 +29,44 @@ function gateway_express(options) {
             return res.status(400).send(json);
         }
         // TODO: handle throw errors
-        const out = await gateway(json, { req, res });
-        if (out && out.handler$) {
-            if (out.handler$.done) {
-                return next();
+        const result = await gateway(json, { req, res });
+        let gateway$ = result.gateway$;
+        if (gateway$.auth && options.auth) {
+            if (gateway$.auth.token) {
+                res.cookie(options.auth.token.name, gateway$.auth.token, {
+                    ...options.auth.cookie,
+                    ...(gateway.auth.cookie || {})
+                });
             }
-            // TODO: move to gateway-auth express handling
-            // TODO: provide a hook to use gateway-auth for response modification
-            if (out.handler$.login) {
-                if (out.handler$.login.token) {
-                    res.cookie(options.auth.token.name, out.handler$.login.token, {
-                        maxAge: 365 * 24 * 60 * 60 * 1000,
-                        httpOnly: true,
-                        sameSite: true
-                    });
-                }
-                else if (out.handler$.login.remove) {
-                    res.clearCookie(options.auth.token.name);
-                }
-            }
-            // Should be last as final action
-            if (out.handler$.redirect) {
-                return res.redirect(out.handler$.redirect);
-            }
-            // TODO: review
-            if (((_a = out === null || out === void 0 ? void 0 : out.handler$) === null || _a === void 0 ? void 0 : _a.error) && !options.bypass_express_error_handler) {
-                // NOTE: Here we are passing the object with information about
-                // the error to the Express' error handler, which allows users
-                // to handle errors in their application.
-                //
-                // This is useful, for example, when you want to return an HTTP
-                // 404 for the 'act_not_found' error; - or handle any other error
-                // that you defined and threw inside a Seneca instance.
-                //
-                return next(out);
+            else if (gateway$.auth.remove) {
+                res.clearCookie(options.auth.token.name);
             }
         }
-        return res.send(out);
+        if (gateway$.next) {
+            // Uses the default express error handler
+            return next(result.error ? result.out.error$ : undefined);
+        }
+        // Should be last as final action
+        else if ((_a = gateway$.redirect) === null || _a === void 0 ? void 0 : _a.location) {
+            return res.redirect((_b = gateway$.redirect) === null || _b === void 0 ? void 0 : _b.location);
+        }
+        if (result.error) {
+            if ((_c = options.error) === null || _c === void 0 ? void 0 : _c.next) {
+                return next(result.error ? result.out.error$ : undefined);
+            }
+            else {
+                res.status(gateway$.status || 500);
+                return res.send(result.out);
+            }
+        }
+        else {
+            if (gateway$.status) {
+                res.status(gateway$.status);
+            }
+            return res.send(result.out);
+        }
     }
+    // Named webhook handler
     async function hook(req, res, next) {
         const body = req.body || {};
         const name = req.params.name;
@@ -79,14 +80,12 @@ function gateway_express(options) {
             body: 'string' === typeof body ? parseJSON(body) : body
         };
         req.body = hookmsg;
-        return msg(req, res, next);
+        return handler(req, res, next);
     }
     return {
         name: 'gateway-express',
         exports: {
-            // DEPRECATE
-            handler: msg,
-            msg,
+            handler,
             hook,
         }
     };
@@ -96,10 +95,16 @@ gateway_express.defaults = {
     auth: {
         token: {
             name: 'seneca-auth'
-        }
+        },
+        cookie: (0, gubu_1.Open)({
+            maxAge: 365 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            sameSite: true,
+        })
     },
-    // TODO: review
-    bypass_express_error_handler: false
+    error: {
+        next: true
+    }
 };
 exports.default = gateway_express;
 if ('undefined' !== typeof (module)) {
