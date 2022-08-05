@@ -55,9 +55,9 @@ type GatewayExpressDirective = {
 
 function gateway_express(this: any, options: GatewayExpressOptions) {
   const seneca: any = this
+
   const tag = seneca.plugin.tag
   const gtag = (null == tag || '-' === tag) ? '' : '$' + tag
-
   const gateway = seneca.export('gateway' + gtag + '/handler')
   const parseJSON = seneca.export('gateway' + gtag + '/parseJSON')
 
