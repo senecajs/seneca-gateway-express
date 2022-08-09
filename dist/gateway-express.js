@@ -30,38 +30,43 @@ function gateway_express(options) {
         }
         const result = await gateway(json, { req, res });
         let gateway$ = result.gateway$;
-        if (gateway$.auth && options.auth) {
-            if (gateway$.auth.token) {
-                res.cookie(options.auth.token.name, gateway$.auth.token, {
-                    ...options.auth.cookie,
-                    ...(gateway.auth.cookie || {})
-                });
+        if (gateway$) {
+            if (gateway$.auth && options.auth) {
+                if (gateway$.auth.token) {
+                    res.cookie(options.auth.token.name, gateway$.auth.token, {
+                        ...options.auth.cookie,
+                        ...(gateway.auth.cookie || {})
+                    });
+                }
+                else if (gateway$.auth.remove) {
+                    res.clearCookie(options.auth.token.name);
+                }
             }
-            else if (gateway$.auth.remove) {
-                res.clearCookie(options.auth.token.name);
-            }
-        }
-        if (gateway$.next) {
-            // Uses the default express error handler
-            return next(result.error ? result.out.error$ : undefined);
-        }
-        // Should be last as final action
-        else if ((_a = gateway$.redirect) === null || _a === void 0 ? void 0 : _a.location) {
-            return res.redirect((_b = gateway$.redirect) === null || _b === void 0 ? void 0 : _b.location);
-        }
-        if (result.error) {
-            if ((_c = options.error) === null || _c === void 0 ? void 0 : _c.next) {
+            if (gateway$.next) {
+                // Uses the default express error handler
                 return next(result.error ? result.out.error$ : undefined);
             }
+            // Should be last as final action
+            else if ((_a = gateway$.redirect) === null || _a === void 0 ? void 0 : _a.location) {
+                return res.redirect((_b = gateway$.redirect) === null || _b === void 0 ? void 0 : _b.location);
+            }
+            if (result.error) {
+                if ((_c = options.error) === null || _c === void 0 ? void 0 : _c.next) {
+                    return next(result.error ? result.out.error$ : undefined);
+                }
+                else {
+                    res.status(gateway$.status || 500);
+                    return res.send(result.out);
+                }
+            }
             else {
-                res.status(gateway$.status || 500);
+                if (gateway$.status) {
+                    res.status(gateway$.status);
+                }
                 return res.send(result.out);
             }
         }
         else {
-            if (gateway$.status) {
-                res.status(gateway$.status);
-            }
             return res.send(result.out);
         }
     }

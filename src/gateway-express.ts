@@ -91,46 +91,50 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
     let gateway$: GatewayExpressDirective = result.gateway$
 
-
-    if (gateway$.auth && options.auth) {
-      if (gateway$.auth.token) {
-        res.cookie(
-          options.auth.token.name,
-          gateway$.auth.token,
-          {
-            ...options.auth.cookie,
-            ...(gateway.auth.cookie || {})
-          }
-        )
+    if (gateway$) {
+      if (gateway$.auth && options.auth) {
+        if (gateway$.auth.token) {
+          res.cookie(
+            options.auth.token.name,
+            gateway$.auth.token,
+            {
+              ...options.auth.cookie,
+              ...(gateway.auth.cookie || {})
+            }
+          )
+        }
+        else if (gateway$.auth.remove) {
+          res.clearCookie(options.auth.token.name)
+        }
       }
-      else if (gateway$.auth.remove) {
-        res.clearCookie(options.auth.token.name)
-      }
-    }
 
-    if (gateway$.next) {
-      // Uses the default express error handler
-      return next(result.error ? result.out.error$ : undefined)
-    }
-
-    // Should be last as final action
-    else if (gateway$.redirect?.location) {
-      return res.redirect(gateway$.redirect?.location)
-    }
-
-    if (result.error) {
-      if (options.error?.next) {
+      if (gateway$.next) {
+        // Uses the default express error handler
         return next(result.error ? result.out.error$ : undefined)
       }
+
+      // Should be last as final action
+      else if (gateway$.redirect?.location) {
+        return res.redirect(gateway$.redirect?.location)
+      }
+
+      if (result.error) {
+        if (options.error?.next) {
+          return next(result.error ? result.out.error$ : undefined)
+        }
+        else {
+          res.status(gateway$.status || 500)
+          return res.send(result.out)
+        }
+      }
       else {
-        res.status(gateway$.status || 500)
+        if (gateway$.status) {
+          res.status(gateway$.status)
+        }
         return res.send(result.out)
       }
     }
     else {
-      if (gateway$.status) {
-        res.status(gateway$.status)
-      }
       return res.send(result.out)
     }
   }
