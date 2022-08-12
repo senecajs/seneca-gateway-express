@@ -35,12 +35,15 @@ function gateway_express(options) {
                 if (gateway$.auth.token) {
                     res.cookie(options.auth.token.name, gateway$.auth.token, {
                         ...options.auth.cookie,
-                        ...(gateway.auth.cookie || {})
+                        ...(gateway$.auth.cookie || {})
                     });
                 }
                 else if (gateway$.auth.remove) {
                     res.clearCookie(options.auth.token.name);
                 }
+            }
+            if (gateway$.header) {
+                res.set(gateway$.header);
             }
             if (gateway$.next) {
                 // Uses the default express error handler

@@ -50,6 +50,8 @@ type GatewayExpressDirective = {
 
   // HTTP status code
   status?: number
+
+  header?: Record<string, any>
 }
 
 
@@ -89,7 +91,7 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
     const result: GatewayResult = await gateway(json, { req, res })
 
-    let gateway$: GatewayExpressDirective = result.gateway$
+    let gateway$: GatewayExpressDirective | undefined = result.gateway$
 
     if (gateway$) {
       if (gateway$.auth && options.auth) {
@@ -99,13 +101,17 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
             gateway$.auth.token,
             {
               ...options.auth.cookie,
-              ...(gateway.auth.cookie || {})
+              ...(gateway$.auth.cookie || {})
             }
           )
         }
         else if (gateway$.auth.remove) {
           res.clearCookie(options.auth.token.name)
         }
+      }
+
+      if (gateway$.header) {
+        res.set(gateway$.header)
       }
 
       if (gateway$.next) {
@@ -138,7 +144,6 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
       return res.send(result.out)
     }
   }
-
 
   // Named webhook handler
   async function hook(req: any, res: any, next: any) {

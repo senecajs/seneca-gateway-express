@@ -28,7 +28,7 @@ describe('gateway-express', () => {
       .use(GatewayExpress)
       .act('sys:gateway,add:hook,hook:fixed', { action: { y: 99 } })
       .message('foo:1', async function(m: any) {
-        return { x: m.x, y: m.y }
+        return { x: m.x, y: m.y, gateway$: { header: { foo: 'bar' } } }
       })
 
     await seneca.ready()
@@ -45,13 +45,18 @@ describe('gateway-express', () => {
         tmp[0].code = code
         return this
       },
-      send: (out: any) => tmp[0].out = out
+      send: (out: any) => tmp[0].out = out,
+      set: (headers: any) => {
+        tmp[0].headers = headers
+      },
     }
     let nextmock = () => tmp[0].next = true
 
     await handler(reqmock({ foo: 1, x: 2 }), resmock, nextmock)
 
     expect(tmp[0].out).toMatchObject({ x: 2, y: 99 })
+    expect(tmp[0].headers).toMatchObject({ foo: 'bar' })
+    expect(tmp[0].out.gateway$).toBeUndefined()
   })
 
 
