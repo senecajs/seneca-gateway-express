@@ -1,4 +1,4 @@
-declare type GatewayExpressOptions = {
+type GatewayExpressOptions = {
     auth?: {
         token: {
             name: string;
@@ -22,9 +22,11 @@ declare namespace gateway_express {
             token: {
                 name: string;
             };
-            cookie: import("gubu").Node & {
-                [name: string]: any;
-            };
+            cookie: import("gubu").Node<{
+                maxAge: number;
+                httpOnly: boolean;
+                sameSite: boolean;
+            }>;
         };
         error: {
             next: boolean;

@@ -61,7 +61,7 @@ describe('gateway-express', () => {
 
 
 
-  test('express-error-basic', done => {
+  test('express-error-next', done => {
     Seneca({
       legacy: false
     })
@@ -69,7 +69,11 @@ describe('gateway-express', () => {
       .quiet()
       .use('promisify')
       .use('gateway')
-      .use(GatewayExpress)
+      .use(GatewayExpress, {
+        error: {
+          next: true
+        }
+      })
 
       .message('foo:1', async function(msg: any) {
         return msg
@@ -93,7 +97,7 @@ describe('gateway-express', () => {
           }
 
           await handler(req, res, (err: any, _req: any, _res: any, _next: any) => {
-            console.log(err)
+            // console.log(err)
 
             expect(err).toMatchObject({
               name: 'Error',
@@ -120,11 +124,7 @@ describe('gateway-express', () => {
       .use('promisify')
       .use('gateway')
 
-      .use(GatewayExpress, {
-        error: {
-          next: false
-        }
-      })
+      .use(GatewayExpress)
 
       .message('foo:1', async function(msg: any) {
         return msg

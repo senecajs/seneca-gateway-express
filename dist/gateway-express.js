@@ -21,6 +21,7 @@ function gateway_express(options) {
         const json = 'string' === typeof body ? parseJSON(body) : body;
         // TODO: doc as a standard feature
         // TODO: implement in other gateways
+        // TODO: headers & body as per gateway-lambda
         json.gateway = {
             params: req.params,
             query: req.query,
@@ -42,6 +43,7 @@ function gateway_express(options) {
                     res.clearCookie(options.auth.token.name);
                 }
             }
+            // TODO: should also match `headers`
             if (gateway$.header) {
                 res.set(gateway$.header);
             }
@@ -110,7 +112,7 @@ gateway_express.defaults = {
         })
     },
     error: {
-        next: true
+        next: false
     }
 };
 exports.default = gateway_express;

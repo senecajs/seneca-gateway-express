@@ -80,6 +80,7 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
     // TODO: doc as a standard feature
     // TODO: implement in other gateways
+    // TODO: headers & body as per gateway-lambda
     json.gateway = {
       params: req.params,
       query: req.query,
@@ -110,6 +111,7 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
         }
       }
 
+      // TODO: should also match `headers`
       if (gateway$.header) {
         res.set(gateway$.header)
       }
@@ -190,7 +192,7 @@ gateway_express.defaults = {
     })
   },
   error: {
-    next: true
+    next: false
   }
 }
 
