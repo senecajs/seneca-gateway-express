@@ -49,7 +49,7 @@ function gateway_express(options) {
             }
             if (gateway$.next) {
                 // Uses the default express error handler
-                return next(result.error ? result.out.error$ : undefined);
+                return next(result.error ? result.out : undefined);
             }
             // Should be last as final action
             else if ((_a = gateway$.redirect) === null || _a === void 0 ? void 0 : _a.location) {
@@ -57,7 +57,7 @@ function gateway_express(options) {
             }
             if (result.error) {
                 if ((_c = options.error) === null || _c === void 0 ? void 0 : _c.next) {
-                    return next(result.error ? result.out.error$ : undefined);
+                    return next(result.error ? result.out : undefined);
                 }
                 else {
                     res.status(gateway$.status || 500);

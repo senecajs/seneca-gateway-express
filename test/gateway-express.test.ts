@@ -97,8 +97,6 @@ describe('gateway-express', () => {
           }
 
           await handler(req, res, (err: any, _req: any, _res: any, _next: any) => {
-            // console.log(err)
-
             expect(err).toMatchObject({
               name: 'Error',
               code: 'act_not_found',
@@ -156,7 +154,7 @@ describe('gateway-express', () => {
 
           expect(responses.length).toEqual(1)
 
-          expect(responses[0].error$).toEqual({
+          expect(responses[0]).toMatchObject({
             code: 'act_not_found',
             name: 'Error'
           })

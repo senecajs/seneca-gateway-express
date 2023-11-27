@@ -118,7 +118,7 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
       if (gateway$.next) {
         // Uses the default express error handler
-        return next(result.error ? result.out.error$ : undefined)
+        return next(result.error ? result.out : undefined)
       }
 
       // Should be last as final action
@@ -128,7 +128,7 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
       if (result.error) {
         if (options.error?.next) {
-          return next(result.error ? result.out.error$ : undefined)
+          return next(result.error ? result.out : undefined)
         }
         else {
           res.status(gateway$.status || 500)
