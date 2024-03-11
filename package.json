@@ -39,16 +39,17 @@
   },
   "devDependencies": {
     "@seneca/maintain": "^0.1.0",
-    "@types/jest": "^29.5.11",
-    "esbuild": "^0.19.11",
+    "@seneca/repl": "^8.1.1",
+    "@types/jest": "^29.5.12",
+    "esbuild": "^0.20.1",
     "esbuild-jest": "^0.5.0",
     "express": "^4.17.1",
     "jest": "^29.7.0",
     "seneca-msg-test": "^4.1.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   },
   "peerDependencies": {
-    "@seneca/gateway": ">=1.1.0",
+    "@seneca/gateway": ">=1.2.0",
     "express": ">=4",
     "seneca": ">=3",
     "seneca-promisify": ">=3"

@@ -19,6 +19,7 @@ function gateway_express(options) {
         var _a, _b, _c;
         const body = req.body;
         const json = 'string' === typeof body ? parseJSON(body) : body;
+        console.log('BODY', json);
         // TODO: doc as a standard feature
         // TODO: implement in other gateways
         // TODO: headers & body as per gateway-lambda
