@@ -78,7 +78,7 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
     const json = 'string' === typeof body ? parseJSON(body) : body
 
-    console.log('BODY', json)
+    // console.log('BODY', json)
 
     // TODO: doc as a standard feature
     // TODO: implement in other gateways
