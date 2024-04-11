@@ -80,12 +80,21 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
     // console.log('BODY', json)
 
+    let headers = null == req.headers ? {} : Object
+      .entries(req.headers)
+      .reduce(
+        (a: any, entry: any) => (a[entry[0].toLowerCase()] = entry[1], a),
+        ({} as any)
+      )
+
+
     // TODO: doc as a standard feature
     // TODO: implement in other gateways
-    // TODO: headers & body as per gateway-lambda
     json.gateway = {
-      params: req.params,
-      query: req.query,
+      params: req.params || {},
+      query: req.query || {},
+      body: req.body,
+      headers,
     }
 
     if (json.error$) {
