@@ -8,6 +8,10 @@ type GatewayExpressOptions = {
     error?: {
         next: boolean;
     };
+    modify?: {
+        req?: (req: any) => any;
+        res?: (req: any, msg: any, out: any) => any;
+    };
 };
 declare function gateway_express(this: any, options: GatewayExpressOptions): {
     name: string;
@@ -30,6 +34,10 @@ declare namespace gateway_express {
         };
         error: {
             next: boolean;
+        };
+        modify: {
+            req: undefined;
+            res: undefined;
         };
     };
 }

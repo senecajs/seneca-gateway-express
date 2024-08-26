@@ -23,10 +23,16 @@ type GatewayExpressOptions = {
     // Use the default express error handler for errors
     next: boolean
   },
+  modify?: {
+    req?: (req: any) => any
+    res?: (req: any, msg: any, out: any) => any
+  }
 }
 
 
 type GatewayExpressDirective = {
+  done?: boolean
+
   // Call Express response.next (passes error if defined)
   next?: boolean
 
@@ -74,6 +80,10 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 
 
   async function handler(req: any, res: any, next: any) {
+    if (options.modify?.req) {
+      req = await options.modify.req.call(req.seneca$, req)
+    }
+
     const body = req.body
 
     const json = 'string' === typeof body ? parseJSON(body) : body
@@ -101,11 +111,20 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
       return res.status(400).send(json)
     }
 
-    const result: GatewayResult = await gateway(json, { req, res })
+    let result: GatewayResult = await gateway(json, { req, res })
+
+    if (options.modify?.res) {
+      result = await options.modify?.res.call(req.seneca$, req, json, result)
+    }
+
 
     let gateway$: GatewayExpressDirective | undefined = result.gateway$
 
     if (gateway$) {
+      if (gateway$.done) {
+        return res.send(result.out)
+      }
+
       if (gateway$.auth && options.auth) {
         if (gateway$.auth.token) {
           res.cookie(
@@ -204,6 +223,10 @@ gateway_express.defaults = {
   },
   error: {
     next: false
+  },
+  modify: {
+    req: undefined,
+    res: undefined,
   }
 }
 

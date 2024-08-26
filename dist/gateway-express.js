@@ -16,7 +16,10 @@ function gateway_express(options) {
         }
     });
     async function handler(req, res, next) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e, _f;
+        if ((_a = options.modify) === null || _a === void 0 ? void 0 : _a.req) {
+            req = await options.modify.req.call(req.seneca$, req);
+        }
         const body = req.body;
         const json = 'string' === typeof body ? parseJSON(body) : body;
         // console.log('BODY', json)
@@ -34,9 +37,15 @@ function gateway_express(options) {
         if (json.error$) {
             return res.status(400).send(json);
         }
-        const result = await gateway(json, { req, res });
+        let result = await gateway(json, { req, res });
+        if ((_b = options.modify) === null || _b === void 0 ? void 0 : _b.res) {
+            result = await ((_c = options.modify) === null || _c === void 0 ? void 0 : _c.res.call(req.seneca$, req, json, result));
+        }
         let gateway$ = result.gateway$;
         if (gateway$) {
+            if (gateway$.done) {
+                return res.send(result.out);
+            }
             if (gateway$.auth && options.auth) {
                 if (gateway$.auth.token) {
                     res.cookie(options.auth.token.name, gateway$.auth.token, {
@@ -57,11 +66,11 @@ function gateway_express(options) {
                 return next(result.error ? result.out : undefined);
             }
             // Should be last as final action
-            else if ((_a = gateway$.redirect) === null || _a === void 0 ? void 0 : _a.location) {
-                return res.redirect((_b = gateway$.redirect) === null || _b === void 0 ? void 0 : _b.location);
+            else if ((_d = gateway$.redirect) === null || _d === void 0 ? void 0 : _d.location) {
+                return res.redirect((_e = gateway$.redirect) === null || _e === void 0 ? void 0 : _e.location);
             }
             if (result.error) {
-                if ((_c = options.error) === null || _c === void 0 ? void 0 : _c.next) {
+                if ((_f = options.error) === null || _f === void 0 ? void 0 : _f.next) {
                     return next(result.error ? result.out : undefined);
                 }
                 else {
@@ -118,6 +127,10 @@ gateway_express.defaults = {
     },
     error: {
         next: false
+    },
+    modify: {
+        req: undefined,
+        res: undefined,
     }
 };
 exports.default = gateway_express;
