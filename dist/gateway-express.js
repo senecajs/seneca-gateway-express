@@ -1,7 +1,6 @@
 "use strict";
 /* Copyright © 2021-2022 Richard Rodger, MIT License. */
 Object.defineProperty(exports, "__esModule", { value: true });
-const gubu_1 = require("gubu");
 function gateway_express(options) {
     const seneca = this;
     const tag = seneca.plugin.tag;
@@ -113,13 +112,14 @@ function gateway_express(options) {
         }
     };
 }
-// Default options.
-gateway_express.defaults = {
+// Default options, built with the validator Seneca passes in: shape on
+// Seneca 4, Gubu on Seneca 3.
+gateway_express.defaults = ({ valid }) => ({
     auth: {
         token: {
             name: 'seneca-auth'
         },
-        cookie: (0, gubu_1.Open)({
+        cookie: valid.Open({
             maxAge: 365 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             sameSite: true,
@@ -132,7 +132,7 @@ gateway_express.defaults = {
         req: undefined,
         res: undefined,
     }
-};
+});
 exports.default = gateway_express;
 if ('undefined' !== typeof (module)) {
     module.exports = gateway_express;

@@ -21,16 +21,14 @@ declare function gateway_express(this: any, options: GatewayExpressOptions): {
     };
 };
 declare namespace gateway_express {
-    var defaults: {
+    var defaults: ({ valid }: {
+        valid: any;
+    }) => {
         auth: {
             token: {
                 name: string;
             };
-            cookie: import("gubu").Node<{
-                maxAge: number;
-                httpOnly: boolean;
-                sameSite: boolean;
-            }>;
+            cookie: any;
         };
         error: {
             next: boolean;
