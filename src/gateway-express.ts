@@ -1,6 +1,8 @@
 /* Copyright © 2021-2022 Richard Rodger, MIT License. */
 
 
+import type Seneca from 'seneca'
+
 import type {
   GatewayResult
 } from '@seneca/gateway'
@@ -58,7 +60,7 @@ type GatewayExpressDirective = {
 }
 
 
-function gateway_express(this: any, options: GatewayExpressOptions) {
+function gateway_express(this: Seneca.Instance, options: GatewayExpressOptions) {
   const seneca: any = this
 
   const tag = seneca.plugin.tag
@@ -206,9 +208,8 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 }
 
 
-// Default options, built with the validator Seneca passes in: shape on
-// Seneca 4, Gubu on Seneca 3.
-gateway_express.defaults = ({ valid }: { valid: any }) => ({
+// Default options, built with the validator that Seneca passes in.
+gateway_express.defaults = ({ valid }: { valid: Seneca.Instance['valid'] }): Record<string, any> => ({
   auth: {
     token: {
       name: 'seneca-auth'

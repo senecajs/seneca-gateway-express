@@ -112,8 +112,7 @@ function gateway_express(options) {
         }
     };
 }
-// Default options, built with the validator Seneca passes in: shape on
-// Seneca 4, Gubu on Seneca 3.
+// Default options, built with the validator that Seneca passes in.
 gateway_express.defaults = ({ valid }) => ({
     auth: {
         token: {

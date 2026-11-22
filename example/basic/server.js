@@ -17,10 +17,7 @@ async function runSeneca() {
 
   return seneca
     .test('print')    // Test mode, full debug logs
-    .use('promisify')
-    .use('entity')
-    .use('repl')  // see https://github.com/senecajs/seneca-repl
-    .use('gateway')
+    .use('@seneca/gateway')
     .use('../..')  // 'gateway-express'
     .use('./bizlogic')
     .ready()
