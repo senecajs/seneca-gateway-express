@@ -16,19 +16,23 @@
 ## Install
 
 ```sh
-npm install @seneca/gateway-express
+npm install seneca@^4 @seneca/gateway @seneca/gateway-express
 ```
+
+Version 2 needs Seneca 4 and Node.js 24 or later. For Seneca 3, use
+`@seneca/gateway-express@1`.
 
 ## Quick Example
 
 ```js
 require('seneca')()
+  .use('@seneca/gateway')
   .use('@seneca/gateway-express')
 ```
 
 ## More Examples
 
-See [test/](test/) for more usage examples.
+See [example/basic](example/basic) and [test/](test/) for more usage examples.
 
 ## Motivation
 

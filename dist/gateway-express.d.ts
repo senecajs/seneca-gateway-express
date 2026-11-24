@@ -1,3 +1,4 @@
+import type Seneca from 'seneca';
 type GatewayExpressOptions = {
     auth?: {
         token: {
@@ -13,7 +14,7 @@ type GatewayExpressOptions = {
         res?: (req: any, msg: any, out: any) => any;
     };
 };
-declare function gateway_express(this: any, options: GatewayExpressOptions): {
+declare function gateway_express(this: Seneca.Instance, options: GatewayExpressOptions): {
     name: string;
     exports: {
         handler: (req: any, res: any, next: any) => Promise<any>;
@@ -21,24 +22,8 @@ declare function gateway_express(this: any, options: GatewayExpressOptions): {
     };
 };
 declare namespace gateway_express {
-    var defaults: {
-        auth: {
-            token: {
-                name: string;
-            };
-            cookie: import("gubu").Node<{
-                maxAge: number;
-                httpOnly: boolean;
-                sameSite: boolean;
-            }>;
-        };
-        error: {
-            next: boolean;
-        };
-        modify: {
-            req: undefined;
-            res: undefined;
-        };
-    };
+    var defaults: ({ valid }: {
+        valid: Seneca.Instance["valid"];
+    }) => Record<string, any>;
 }
 export default gateway_express;

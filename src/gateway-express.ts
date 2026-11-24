@@ -1,8 +1,7 @@
 /* Copyright © 2021-2022 Richard Rodger, MIT License. */
 
 
-import { Open } from 'gubu'
-
+import type Seneca from 'seneca'
 
 import type {
   GatewayResult
@@ -61,7 +60,7 @@ type GatewayExpressDirective = {
 }
 
 
-function gateway_express(this: any, options: GatewayExpressOptions) {
+function gateway_express(this: Seneca.Instance, options: GatewayExpressOptions) {
   const seneca: any = this
 
   const tag = seneca.plugin.tag
@@ -209,13 +208,13 @@ function gateway_express(this: any, options: GatewayExpressOptions) {
 }
 
 
-// Default options.
-gateway_express.defaults = {
+// Default options, built with the validator that Seneca passes in.
+gateway_express.defaults = ({ valid }: { valid: Seneca.Instance['valid'] }): Record<string, any> => ({
   auth: {
     token: {
       name: 'seneca-auth'
     },
-    cookie: Open({
+    cookie: valid.Open({
       maxAge: 365 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: true,
@@ -228,7 +227,7 @@ gateway_express.defaults = {
     req: undefined,
     res: undefined,
   }
-}
+})
 
 
 export default gateway_express
